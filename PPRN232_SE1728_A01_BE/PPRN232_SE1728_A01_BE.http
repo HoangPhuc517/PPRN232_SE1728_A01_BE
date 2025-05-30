@@ -1,0 +1,6 @@
+@PPRN232_SE1728_A01_BE_HostAddress = http://localhost:5248
+
+GET {{PPRN232_SE1728_A01_BE_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
