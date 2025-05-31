@@ -14,5 +14,6 @@ namespace Services.Interface
         Task<SystemAccount> Update(int id, Delta<SystemAccount> delta);
         Task<SystemAccount> Create(SystemAccount systemAccount);
         Task Delete(int id);
+        Task<SystemAccount> LoginAsync(string email, string passwork);
     }
 }

@@ -26,6 +26,12 @@ namespace Services.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                int id = (_unitOfWork.GenericRepository<SystemAccount>()
+                                     .GetAll()
+                                     .Select(x => (int?)x.AccountId)
+                                     .Max() ?? 0) + 1;
+
+                systemAccount.AccountId = (short)id ;
                 await _unitOfWork.GenericRepository<SystemAccount>().InsertAsync(systemAccount);
                 var result = await _unitOfWork.SaveChangeAsync();
                 if (result > 0)
@@ -61,11 +67,11 @@ namespace Services.Services
                 }
                 _unitOfWork.GenericRepository<SystemAccount>().Delete(systemAccount);
                 var result = await _unitOfWork.SaveChangeAsync();
-                if (result > 0)
+                if (result <= 0)
                 {
-                    await _unitOfWork.CommitTransactionAsync();
+                    throw new Exception("Failed to delete SystemAccount");
                 }
-                throw new Exception("Failed to delete SystemAccount");
+                await _unitOfWork.CommitTransactionAsync();
             }
             catch (Exception ex)
             {
@@ -95,7 +101,7 @@ namespace Services.Services
             try
             {
                 var systemAccount = await _unitOfWork.GenericRepository<SystemAccount>()
-                                                     .GetByIdAsync(id);
+                                                     .GetByIdAsync((short)id);
                 if (systemAccount is null)
                 {
                     throw new Exception("SystemAccount not found");
@@ -121,6 +127,27 @@ namespace Services.Services
             {
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<SystemAccount> LoginAsync(string email, string passwork)
+        {
+            try
+            {
+                var systemAccount = await _unitOfWork.GenericRepository<SystemAccount>()
+                                               .GetFirstOrDefaultAsync(
+                                                        predicate: x => x.AccountEmail.ToUpper() == email.ToUpper() 
+                                                                     && x.AccountPassword == passwork);
+                if (systemAccount is null)
+                {
+                    throw new Exception("Invalid email or password");
+                }
+                return systemAccount;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during login");
                 throw;
             }
         }
