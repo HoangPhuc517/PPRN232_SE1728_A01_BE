@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.OData.Deltas;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.OData.Deltas;
 using Repositories.Entity;
 using Repositories.Interface;
 using Services.DTOs;
@@ -15,6 +16,7 @@ namespace Services.Services
 	{
 		private readonly IUnitOfWork _unitOfWork;
 
+
 		public CategoryService(IUnitOfWork unitOfWork)
 		{
 			_unitOfWork = unitOfWork;
@@ -22,7 +24,14 @@ namespace Services.Services
 
 		public IEnumerable<Category> GetAllCategories()
 		{
-			return _unitOfWork.GenericRepository<Category>().GetAll();
+			try
+			{
+				return _unitOfWork.GenericRepository<Category>().GetAll();
+			}
+			catch (Exception ex)
+			{
+				throw new Exception("An error occurred while retrieving news articles.", ex);
+			}
 		}
 
 		public async Task DeleteCategoryAsync(int id)
@@ -36,18 +45,23 @@ namespace Services.Services
 					throw new Exception($"Category with ID {id} not found.");
 				}
 
-				 _unitOfWork.GenericRepository<Category>().Delete(category);
+				if (category.InverseParentCategory.Count > 0 || category.NewsArticles.Count > 0)
+				{
+					throw new Exception("Can't delete the category. Because have the children category");
+				}
+
+				_unitOfWork.GenericRepository<Category>().Delete(category);
 				var res = await _unitOfWork.SaveChangeAsync();
 				if (res < 0)
 				{
 					throw new Exception("Can't delete the category");
 				}
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				throw new Exception($"An error occurred while retrieving the category: {ex.Message}");
 			}
-        }
+		}
 
 		public async Task<Category> UpdateCategoryAsync(int id, Delta<Category> delta)
 		{
@@ -61,10 +75,10 @@ namespace Services.Services
 					throw new KeyNotFoundException($"Category with ID {id} not found.");
 				}
 
-				//if (delta.GetChangedPropertyNames().Contains("Id"))
-				//{
-				//	throw new Exception("Cannot update the Id property.");
-				//}
+				if (delta.GetChangedPropertyNames().Contains(nameof(Category.CategoryId)))
+				{
+					throw new Exception("Cannot update the Id property.");
+				}
 
 				var changedProperties = delta.GetChangedPropertyNames();
 				if (changedProperties.Contains("Id"))
@@ -78,7 +92,6 @@ namespace Services.Services
 				await _unitOfWork.SaveChangeAsync();
 
 				return category;
-
 			}
 			catch (Exception ex)
 			{
@@ -98,9 +111,9 @@ namespace Services.Services
 				};
 
 				await _unitOfWork.GenericRepository<Category>().InsertAsync(newCategory);
-				  await _unitOfWork.SaveChangeAsync();
-               
-                return newCategory;
+				await _unitOfWork.SaveChangeAsync();
+
+				return newCategory;
 			}
 			catch (Exception ex)
 			{

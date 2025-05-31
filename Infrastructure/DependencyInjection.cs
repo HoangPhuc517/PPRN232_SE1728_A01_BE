@@ -10,6 +10,7 @@ using Repositories;
 using Repositories.Interface;
 using Repositories.Repositories;
 using Services.Interface;
+using Services.Mapping;
 using Services.Services;
 
 namespace Infrastructure
@@ -21,14 +22,17 @@ namespace Infrastructure
             //DbContext
             services.AddDbContext<FunewsManagementContext>(options => options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+			//DI for AutoMapper
+			services.AddAutoMapper(typeof(MappingProfile));
 
-            //DI for Repositories
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+			//DI for Repositories
+			services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+			services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
-            //DI for Services
-            services.AddScoped<ISystemAccountService, SystemAccountService>();
+			//DI for Services
+			services.AddScoped<INewsArticleService, NewArticleService>();
+			services.AddScoped<ISystemAccountService, SystemAccountService>();
 			services.AddScoped<ICategoryService, CategoryService>();
 
 			return services;
