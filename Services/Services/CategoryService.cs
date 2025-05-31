@@ -45,7 +45,7 @@ namespace Services.Services
 					throw new Exception($"Category with ID {id} not found.");
 				}
 
-				if (category.InverseParentCategory.Count > 0 || category.NewsArticles.Count > 0)
+				if (category.NewsArticles.Count > 0)
 				{
 					throw new Exception("Can't delete the category. Because have the children category");
 				}
@@ -108,10 +108,17 @@ namespace Services.Services
 					CategoryName = category.CategoryName,
 					CategoryDesciption = category.CategoryDesciption,
 					ParentCategoryId = category.ParentCategoryId ?? null,
+					IsActive = true,
 				};
 
 				await _unitOfWork.GenericRepository<Category>().InsertAsync(newCategory);
 				await _unitOfWork.SaveChangeAsync();
+
+				if (newCategory.ParentCategoryId == null)
+				{
+					newCategory.ParentCategoryId = newCategory.CategoryId;
+					await _unitOfWork.SaveChangeAsync();
+				}
 
 				return newCategory;
 			}

@@ -19,8 +19,19 @@ internal class Program
 			options.Select().Filter().OrderBy().Expand().Count().SetMaxTop(100);
 
 		});
+		builder.Services.AddCors(options =>
+		{
+			options.AddPolicy("AllowLocalhost",
+				policy =>
+				{
+					policy.WithOrigins("https://localhost:7065")
+						  .AllowAnyHeader()
+						  .AllowAnyMethod();
+				});
+		});
 
-        builder.Services.AddControllers();
+
+		builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
@@ -33,6 +44,8 @@ internal class Program
             app.UseSwagger();
             app.UseSwaggerUI();
         }
+
+        app.UseCors("AllowLocalhost");
 
         app.UseHttpsRedirection();
 

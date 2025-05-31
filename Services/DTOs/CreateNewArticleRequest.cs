@@ -12,6 +12,7 @@ namespace Services.DTOs
 		public string Headline { get; set; } = null!;
 		public string? NewsContent { get; set; }
 		public string? NewsSource { get; set; }
+		public short? CreatedById { get; set; }
 		public short? CategoryId { get; set; }
 		public List<int> TagIds { get; set; } = new List<int>();
 	}

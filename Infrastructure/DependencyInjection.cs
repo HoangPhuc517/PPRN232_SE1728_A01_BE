@@ -35,8 +35,9 @@ namespace Infrastructure
 			services.AddScoped<INewsArticleService, NewArticleService>();
 			services.AddScoped<ISystemAccountService, SystemAccountService>();
 			services.AddScoped<ICategoryService, CategoryService>();
+			services.AddScoped<ITagService, TagService>();
 
-            return services;
+			return services;
         }
     }
 }
