@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Deltas;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Repositories.Entity;
+using Services.DTOs;
 using Services.Interface;
 
 namespace PPRN232_SE1728_A01_BE.Controllers
@@ -31,21 +33,21 @@ namespace PPRN232_SE1728_A01_BE.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
         }
 
         [EnableQuery]
-        public async Task<IActionResult> Post([FromBody] SystemAccount systemAccount)
+        public async Task<IActionResult> Post([FromBody] SignUpRequest model)
         {
-            if (systemAccount == null)
+            if (model == null)
             {
                 return BadRequest("SystemAccount cannot be null");
             }
             try
             {
-                var createdSystemAccount = await _systemAccountService.Create(systemAccount);
-                return Created(createdSystemAccount);
+                var createdSystemAccount = await _systemAccountService.SignUp(model);
+                return Ok(createdSystemAccount);
             }
             catch (Exception ex)
             {
@@ -67,7 +69,7 @@ namespace PPRN232_SE1728_A01_BE.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
         }
 
@@ -81,16 +83,16 @@ namespace PPRN232_SE1728_A01_BE.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login( string email, string password)
+        [HttpPost("signin")]
+        public async Task<IActionResult> Login([FromBody] Services.DTOs.SignInRequest model)
         {
             try
             {
-                var systemAccount = await _systemAccountService.LoginAsync(email, password);
+                var systemAccount = await _systemAccountService.SignIn(model);
                 if (systemAccount == null)
                 {
                     return Unauthorized("Invalid email or password");
@@ -99,7 +101,7 @@ namespace PPRN232_SE1728_A01_BE.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, ex.Message);
             }
 
         }

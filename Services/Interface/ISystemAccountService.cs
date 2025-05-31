@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.OData.Deltas;
 using Repositories.Entity;
+using Services.DTOs;
 
 namespace Services.Interface
 {
@@ -12,8 +13,8 @@ namespace Services.Interface
     {
         Task<IQueryable<SystemAccount>> GetAllAsync();
         Task<SystemAccount> Update(int id, Delta<SystemAccount> delta);
-        Task<SystemAccount> Create(SystemAccount systemAccount);
+        Task<SystemAccount> SignUp(SignUpRequest model);
         Task Delete(int id);
-        Task<SystemAccount> LoginAsync(string email, string passwork);
+        Task<SystemAccount> SignIn(SignInRequest model);
     }
 }

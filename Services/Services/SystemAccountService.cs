@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.OData.Deltas;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Repositories.Entity;
 using Repositories.Interface;
+using Services.DTOs;
 using Services.Interface;
 
 namespace Services.Services
@@ -15,29 +18,43 @@ namespace Services.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<SystemAccountService> _logger;
-        public SystemAccountService(IUnitOfWork unitOfWork, ILogger<SystemAccountService> logger)
+        private readonly AdminDTO _adminConfig;
+        public SystemAccountService(IUnitOfWork unitOfWork, ILogger<SystemAccountService> logger, IOptions<AdminDTO> options)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _adminConfig = options.Value;
         }
 
-        public async Task<SystemAccount> Create(SystemAccount systemAccount)
+        public async Task<SystemAccount> SignUp(SignUpRequest model)
         {
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                int id = (_unitOfWork.GenericRepository<SystemAccount>()
-                                     .GetAll()
-                                     .Select(x => (int?)x.AccountId)
+                var query = _unitOfWork.GenericRepository<SystemAccount>()
+                                     .GetAll();
+                if (query.Any(x => x.AccountEmail.ToUpper() == model.AccountEmail.ToUpper()) 
+                  || model.AccountEmail.ToLower() == _adminConfig.Email.ToLower())
+                {
+                    throw new Exception("Email already exists");
+                }
+                    int id = (query.Select(x => (int?)x.AccountId)
                                      .Max() ?? 0) + 1;
 
-                systemAccount.AccountId = (short)id ;
-                await _unitOfWork.GenericRepository<SystemAccount>().InsertAsync(systemAccount);
+                var account = new SystemAccount
+                {
+                    AccountId = (short)id,
+                    AccountEmail = model.AccountEmail,
+                    AccountPassword = model.AccountPassword,
+                    AccountName = model.AccountName,
+                    AccountRole = (int)model.AccountRole
+                };
+                await _unitOfWork.GenericRepository<SystemAccount>().InsertAsync(account);
                 var result = await _unitOfWork.SaveChangeAsync();
                 if (result > 0)
                 {
                     await _unitOfWork.CommitTransactionAsync();
-                    return systemAccount;
+                    return account;
                 }
                 throw new Exception("Failed to create SystemAccount");
             }
@@ -131,16 +148,29 @@ namespace Services.Services
             }
         }
 
-        public async Task<SystemAccount> LoginAsync(string email, string passwork)
+        public async Task<SystemAccount> SignIn(SignInRequest model)
         {
             try
             {
                 var systemAccount = await _unitOfWork.GenericRepository<SystemAccount>()
                                                .GetFirstOrDefaultAsync(
-                                                        predicate: x => x.AccountEmail.ToUpper() == email.ToUpper() 
-                                                                     && x.AccountPassword == passwork);
+                                                        predicate: x => x.AccountEmail.ToUpper() == model.Email.ToUpper() 
+                                                                     && x.AccountPassword == model.Password);
                 if (systemAccount is null)
                 {
+                    if (model.Email.ToUpper() == _adminConfig.Email.ToUpper()
+                        && model.Password == _adminConfig.Password)
+                    {
+                        systemAccount = new SystemAccount
+                        {
+                            AccountId = 0,
+                            AccountEmail = _adminConfig.Email,
+                            AccountPassword = _adminConfig.Password,
+                            AccountName = "Admin",
+                            AccountRole = 0
+                        };
+                        return systemAccount;
+                    }
                     throw new Exception("Invalid email or password");
                 }
                 return systemAccount;
