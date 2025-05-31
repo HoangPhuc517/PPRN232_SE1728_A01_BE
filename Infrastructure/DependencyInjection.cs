@@ -29,8 +29,9 @@ namespace Infrastructure
 
             //DI for Services
             services.AddScoped<ISystemAccountService, SystemAccountService>();
+			services.AddScoped<ICategoryService, CategoryService>();
 
-            return services;
+			return services;
         }
     }
 }

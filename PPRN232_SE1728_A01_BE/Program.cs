@@ -13,9 +13,10 @@ internal class Program
         //Config OData
         builder.Services.AddControllers().AddOData(options =>
         {
-            options.Select().Filter().OrderBy().Expand().Count().SetMaxTop(100);
-            options.AddRouteComponents("odata", ConfigOData.GetEdmModel());
-        });
+			options.AddRouteComponents("odata", ConfigOData.GetEdmModel());
+			options.Select().Filter().OrderBy().Expand().Count().SetMaxTop(100);
+
+		});
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
