@@ -1,5 +1,6 @@
 using Infrastructure;
 using Microsoft.AspNetCore.OData;
+using Services.DTOs;
 
 internal class Program
 {
@@ -10,6 +11,7 @@ internal class Program
         // Add services to the container.
 
         builder.Services.AddInfrastructureDI(builder.Configuration);
+        builder.Services.Configure<AdminDTO>(builder.Configuration.GetSection("AdminConfig"));
         //Config OData
         builder.Services.AddControllers().AddOData(options =>
         {

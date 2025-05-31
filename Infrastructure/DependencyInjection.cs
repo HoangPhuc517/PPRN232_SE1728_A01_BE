@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Repositories;
 using Repositories.Interface;
 using Repositories.Repositories;
+using Services.DTOs;
 using Services.Interface;
 using Services.Mapping;
 using Services.Services;
@@ -35,7 +36,7 @@ namespace Infrastructure
 			services.AddScoped<ISystemAccountService, SystemAccountService>();
 			services.AddScoped<ICategoryService, CategoryService>();
 
-			return services;
+            return services;
         }
     }
 }
