@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Repositories.Entity;
 
@@ -13,11 +14,14 @@ public partial class Category
 
     public short? ParentCategoryId { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool? IsActive { get; set; } = true;
 
+    [JsonIgnore]
     public virtual ICollection<Category> InverseParentCategory { get; set; } = new List<Category>();
 
-    public virtual ICollection<NewsArticle> NewsArticles { get; set; } = new List<NewsArticle>();
+	[JsonIgnore]
+	public virtual ICollection<NewsArticle> NewsArticles { get; set; } = new List<NewsArticle>();
 
-    public virtual Category? ParentCategory { get; set; }
+	[JsonIgnore]
+	public virtual Category? ParentCategory { get; set; }
 }
